@@ -142,12 +142,12 @@ Phase Focus Outcome
 
 ## Deliverables
 
-README with architecture diagram & profiling examples.
-pprof flame graph screenshots (Stretch: Visual pprof flame graph (go tool pprof -http=:8081 cpu.prof))
-Metrics output under load test.
-Optional: CSV log for latency analysis.
-Comparison of throughput pre- and post-optimization.
-Load testing summary:
+- README with architecture diagram & profiling examples.
+- pprof flame graph screenshots (Stretch: Visual pprof flame graph (go tool pprof -http=:8081 cpu.prof))
+- Metrics output under load test.
+- Optional: CSV log for latency analysis.
+- Comparison of throughput pre- and post-optimization.
+- Load testing summary:
 
 ```json
 Load test: 100 clients, 10,000 txns
