@@ -3,7 +3,6 @@ package middleware
 import (
 	"fintech-capstone/m/v2/internal/platform"
 	"fintech-capstone/m/v2/internal/platform/http_kit/writer"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -12,7 +11,6 @@ import (
 func RequestLogger(logger platform.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("request logger")
 			start := time.Now()
 
 			sw := writer.Wrap(w)

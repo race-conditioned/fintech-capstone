@@ -11,11 +11,11 @@ import (
 	"fintech-capstone/m/v2/internal/platform/http_kit/limiter"
 	"fintech-capstone/m/v2/internal/platform/http_kit/middleware"
 	"fintech-capstone/m/v2/internal/platform/http_kit/writer"
-	"fmt"
 	"net/http"
 	"net/http/pprof"
 )
 
+// NewRouter creates and returns a new HTTP router for the API Gateway.
 func NewRouter(gw *entrypoint.Gateway, logger platform.Logger) http.Handler {
 	mux := http.NewServeMux()
 
@@ -25,9 +25,9 @@ func NewRouter(gw *entrypoint.Gateway, logger platform.Logger) http.Handler {
 			TransferJSONDecoder(),
 			func(w http.ResponseWriter, res inbound.TransferResult) {
 				writer.JSON(w, http.StatusOK, contracts.TransferResponse{
-					TransactionID: res.TransactionID.String(),
-					Status:        res.Status,
-					Message:       res.Message,
+					TransactionID: res.TransactionID().String(),
+					Status:        res.Status().String(),
+					Message:       res.Message(),
 				})
 			},
 			DefaultMeta,
@@ -72,9 +72,9 @@ func NewRouter(gw *entrypoint.Gateway, logger platform.Logger) http.Handler {
 	)
 }
 
+// TransferJSONDecoder decodes a TransferCommand from a JSON HTTP request.
 func TransferJSONDecoder() Decoder[inbound.TransferCommand] {
 	return func(r *http.Request) (inbound.TransferCommand, error) {
-		fmt.Println("decode json")
 		var dto struct {
 			From           string `json:"from"`
 			To             string `json:"to"`
@@ -90,11 +90,11 @@ func TransferJSONDecoder() Decoder[inbound.TransferCommand] {
 			}
 			return inbound.TransferCommand{}, apperr.Invalid("invalid JSON payload")
 		}
-		return inbound.TransferCommand{
-			FromAccount:    dto.From,
-			ToAccount:      dto.To,
-			AmountCents:    dto.Amount,
-			IdempotencyKey: dto.IdempotencyKey,
-		}, nil
+		return inbound.NewTransferCommand(
+			dto.From,
+			dto.To,
+			dto.Amount,
+			dto.IdempotencyKey,
+		), nil
 	}
 }

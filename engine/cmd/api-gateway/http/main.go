@@ -15,6 +15,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// main is the entry point for the API Gateway HTTP server.
 func main() {
 	zaplog, err := zap.NewProduction()
 	if err != nil {

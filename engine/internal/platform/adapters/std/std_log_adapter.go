@@ -8,12 +8,15 @@ import (
 	"strings"
 )
 
+// StdLogger adapts the standard library log package to the platform.Logger interface.
 type StdLogger struct {
 	prefix string
 }
 
+// New constructs a new StdLogger.
 func New() *StdLogger { return &StdLogger{} }
 
+// With enriches the logger with additional fields.
 func (l *StdLogger) With(fields ...platform.Field) platform.Logger {
 	if len(fields) == 0 {
 		return l
@@ -41,6 +44,10 @@ func (l *StdLogger) log(level string, msg string, fields ...platform.Field) {
 
 	log.Printf("%s %s%s", level, l.prefix, msg)
 }
+
+// ---------------
+// Logging methods
+// ---------------
 
 func (l *StdLogger) Debug(msg string, args ...platform.Field) { l.log("[DEBUG]", msg, args...) }
 func (l *StdLogger) Info(msg string, args ...platform.Field)  { l.log("[INFO]", msg, args...) }

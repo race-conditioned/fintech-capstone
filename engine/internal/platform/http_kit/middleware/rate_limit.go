@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// AllowFunc is a minimal adapter so you can plug in any limiter.
+// AllowFunc is a minimal adapter to allow various rate limiting decisions.
 type AllowFunc func(ctx context.Context, key string) bool
 
 // ClientKeyFromRequest picks API key, then X-Forwarded-For, then RemoteAddr.
@@ -26,6 +26,7 @@ func ClientKeyFromRequest(r *http.Request) string {
 	return r.RemoteAddr
 }
 
+// clientIP extracts the client IP from X-Forwarded-For or RemoteAddr.
 func clientIP(r *http.Request) string {
 	xff := r.Header.Get("X-Forwarded-For")
 	if xff != "" {
@@ -49,7 +50,7 @@ func RateLimitHTTP(allow AllowFunc) func(http.Handler) http.Handler {
 
 			key := ClientKeyFromRequest(r)
 			if !allow(ctx, key) {
-				// Best-effort: close body to free the conn; we didn't read it.
+				// close body to free the conn; as it was not read.
 				_ = r.Body.Close()
 				w.Header().Set("Retry-After", "1")
 				http.Error(w, http.StatusText(http.StatusTooManyRequests), http.StatusTooManyRequests)

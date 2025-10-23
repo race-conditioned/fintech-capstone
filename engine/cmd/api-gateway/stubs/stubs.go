@@ -11,13 +11,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func Build() (outbound.Limiter, outbound.Idempotency, outbound.Dispatcher, outbound.Metrics) {
+// BuildTransfer builds stubs for transfer-related outbound ports.
+func BuildTransfer() (outbound.Limiter, outbound.Idempotency[inbound.TransferResult], outbound.Dispatcher, outbound.Metrics) {
 	return &allowAllLimiter{}, newInmemIdemp(), &immediateDispatcher{}, &noopMetrics{}
 }
 
 // Limiter: allow all
 type allowAllLimiter struct{}
 
+// Allow: always true
 func (a *allowAllLimiter) Allow(string) bool { return true }
 
 // Idempotency: in-memory
@@ -26,7 +28,10 @@ type inmemIdemp struct {
 	m  map[string]inbound.TransferResult
 }
 
+// inmemIdemp constructor
 func newInmemIdemp() *inmemIdemp { return &inmemIdemp{m: make(map[string]inbound.TransferResult)} }
+
+// Get retrieves a value by key
 func (s *inmemIdemp) Get(k string) (inbound.TransferResult, bool) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -34,6 +39,7 @@ func (s *inmemIdemp) Get(k string) (inbound.TransferResult, bool) {
 	return v, ok
 }
 
+// Store saves a value by key
 func (s *inmemIdemp) Store(k string, v inbound.TransferResult) {
 	s.mu.Lock()
 	s.m[k] = v
@@ -43,9 +49,10 @@ func (s *inmemIdemp) Store(k string, v inbound.TransferResult) {
 // Dispatcher: immediately succeed
 type immediateDispatcher struct{}
 
+// Submit: immediately return success
 func (d *immediateDispatcher) Submit(_ context.Context, _ inbound.TransferCommand) <-chan inbound.TransferResult {
 	ch := make(chan inbound.TransferResult, 1)
-	ch <- inbound.TransferResult{TransactionID: uuid.New(), Status: "success", Message: "ok"}
+	ch <- inbound.NewTransferResult(uuid.New(), "success", "ok")
 	close(ch)
 	return ch
 }
@@ -54,6 +61,10 @@ func (d *immediateDispatcher) ActiveWorkers() int64 { return 0 }
 
 // Metrics: no-op
 type noopMetrics struct{}
+
+// -----------
+// metric ops
+// -----------
 
 func (*noopMetrics) IncRequest()                         {}
 func (*noopMetrics) IncSuccess()                         {}

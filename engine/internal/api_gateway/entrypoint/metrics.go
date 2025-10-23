@@ -6,6 +6,7 @@ import (
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
 )
 
+// MetricsHandler handles metrics requests.
 func (g *Gateway) MetricsHandler(ctx context.Context, _ inbound.RequestMeta, _ struct{}) (contracts.MetricsSnapshot, error) {
 	s := g.metrics.Snapshot()
 	s.ActiveWorkers = g.dispatcher.ActiveWorkers()

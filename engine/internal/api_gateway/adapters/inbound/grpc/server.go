@@ -7,11 +7,13 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GRPCServer implements inbound.Server using gRPC.
 type GRPCServer struct {
 	srv *grpc.Server
 	ln  net.Listener
 }
 
+// NewGRPCServer creates a new GRPCServer listening on the given address.
 func NewGRPCServer(addr string, register func(*grpc.Server)) (*GRPCServer, error) {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -22,6 +24,7 @@ func NewGRPCServer(addr string, register func(*grpc.Server)) (*GRPCServer, error
 	return &GRPCServer{srv: gs, ln: ln}, nil
 }
 
+// Start starts the gRPC server and listens for incoming connections.
 func (s *GRPCServer) Start(ctx context.Context) error {
 	errCh := make(chan error, 1)
 	go func() { errCh <- s.srv.Serve(s.ln) }()
@@ -34,6 +37,7 @@ func (s *GRPCServer) Start(ctx context.Context) error {
 	}
 }
 
+// Shutdown gracefully stops the gRPC server.
 func (s *GRPCServer) Shutdown(ctx context.Context) error {
 	done := make(chan struct{})
 

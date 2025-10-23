@@ -1,5 +1,7 @@
+// package apper standardises the error definition across the application.
 package apperr
 
+// Code defines the type for error codes for consistent mapping to transport layers.
 type Code int
 
 const (
@@ -13,16 +15,20 @@ const (
 	CodeInternal
 )
 
+// Error represents a standard application error with a code and message.
 type Error struct {
 	Code Code
 	Msg  string
 	Err  error // optional wrap
 }
 
+// Error implements the error interface.
 func (e *Error) Error() string { return e.Msg }
 
+// Wrap wraps an existing error with a Code and message.
 func Wrap(code Code, msg string, err error) *Error { return &Error{Code: code, Msg: msg, Err: err} }
 
+// As converts a generic error to an *Error.
 func As(err error) *Error {
 	if err == nil {
 		return nil

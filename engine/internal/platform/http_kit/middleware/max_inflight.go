@@ -4,6 +4,7 @@ import (
 	"net/http"
 )
 
+// MaxInFlight limits the number of concurrent in-flight HTTP requests to n.
 func MaxInFlight(n int) func(http.Handler) http.Handler {
 	sem := make(chan struct{}, n)
 	return func(next http.Handler) http.Handler {

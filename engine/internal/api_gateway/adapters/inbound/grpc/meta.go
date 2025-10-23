@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// metaFromGRPC extracts request metadata from gRPC context.
 func metaFromGRPC(ctx context.Context, fullMethod string) inbound.RequestMeta {
 	first := func(vals []string) string {
 		if len(vals) > 0 {

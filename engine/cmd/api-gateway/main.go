@@ -19,6 +19,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// runAll starts all provided servers and manages their lifecycle.
 func runAll(ctx context.Context, servers ...inbound.Server) error {
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -54,6 +55,7 @@ func runAll(ctx context.Context, servers ...inbound.Server) error {
 	return multierr.Combine(runErr, shutdownErr)
 }
 
+// main is the entry point of the API Gateway application when running multiple transports.
 func main() {
 	zaplog, err := zap.NewProduction()
 	if err != nil {

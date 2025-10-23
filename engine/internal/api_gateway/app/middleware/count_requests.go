@@ -4,13 +4,12 @@ import (
 	"context"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/outbound"
-	"fmt"
 )
 
-func CountRequests(m outbound.Metrics) inbound.UnaryMiddleware[inbound.TransferCommand, inbound.TransferResult] {
-	return func(next inbound.UnaryHandler[inbound.TransferCommand, inbound.TransferResult]) inbound.UnaryHandler[inbound.TransferCommand, inbound.TransferResult] {
-		return func(ctx context.Context, meta inbound.RequestMeta, cmd inbound.TransferCommand) (inbound.TransferResult, error) {
-			fmt.Println("Count Requests")
+// CountRequests is a middleware that counts incoming requests using the provided metrics.
+func CountRequests[Com inbound.Command, Result inbound.Result](m outbound.Metrics) inbound.UnaryMiddleware[Com, Result] {
+	return func(next inbound.UnaryHandler[Com, Result]) inbound.UnaryHandler[Com, Result] {
+		return func(ctx context.Context, meta inbound.RequestMeta, cmd Com) (Result, error) {
 			if m != nil {
 				m.IncRequest()
 			}

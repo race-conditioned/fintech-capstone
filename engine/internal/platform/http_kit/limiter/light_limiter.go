@@ -14,6 +14,7 @@ type LightLimiter struct {
 	bucket map[string]*tokenBucket
 }
 
+// tokenBucket represents a simple token bucket.
 type tokenBucket struct {
 	tokens float64
 	last   time.Time
@@ -28,7 +29,7 @@ func NewLightLimiter(rate float64, burst int) *LightLimiter {
 	}
 }
 
-// Allow returns true if the given key is allowed.
+// Allow checks if a request with the given key is allowed.
 func (l *LightLimiter) Allow(_ context.Context, key string) bool {
 	now := time.Now()
 

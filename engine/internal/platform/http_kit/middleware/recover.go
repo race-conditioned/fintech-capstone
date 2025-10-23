@@ -12,7 +12,6 @@ import (
 func RecovererWithLogger(logger platform.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println("recover with logger")
 			defer func() {
 				if rec := recover(); rec != nil {
 					stack := debug.Stack()

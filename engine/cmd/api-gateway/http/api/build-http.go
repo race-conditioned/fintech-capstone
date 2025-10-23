@@ -1,36 +1,17 @@
 package http_api
 
 import (
-	"fintech-capstone/m/v2/cmd/api-gateway/stubs"
+	"fintech-capstone/m/v2/cmd/api-gateway/gateway"
 	http_transport "fintech-capstone/m/v2/internal/api_gateway/adapters/inbound/http"
-	"fintech-capstone/m/v2/internal/api_gateway/app"
-	"fintech-capstone/m/v2/internal/api_gateway/entrypoint"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
 	"fintech-capstone/m/v2/internal/platform"
 	"fmt"
 	"time"
 )
 
+// BuildServer builds and returns an HTTP server for the API Gateway.
 func BuildServer(logger platform.Logger) inbound.Server {
-	limiter, idemp, dispatch, metrics := stubs.Build()
-
-	uc := app.NewTransferService(dispatch, metrics, logger)
-
-	transferLimiter := limiter
-	transferIdemp := idemp
-
-	gw := entrypoint.NewGateway(
-		uc,
-		transferLimiter,
-		transferIdemp,
-		metrics,
-		dispatch,
-		logger,
-		2*time.Second,
-	)
-
-	// Build HTTP handler and server
-	handler := http_transport.NewRouter(gw, logger)
+	handler := http_transport.NewRouter(gateway.BuildGateway(logger), logger)
 
 	httpSrv, err := http_transport.NewHTTPServer(
 		":8080", handler,

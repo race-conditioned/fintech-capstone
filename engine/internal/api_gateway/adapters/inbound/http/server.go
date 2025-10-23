@@ -6,10 +6,12 @@ import (
 	"time"
 )
 
+// HTTPServer implements inbound.Server using net/http.
 type HTTPServer struct {
 	srv *http.Server
 }
 
+// NewHTTPServer creates a new HTTPServer with the given configuration.
 func NewHTTPServer(
 	addr string,
 	handler http.Handler,
@@ -30,6 +32,7 @@ func NewHTTPServer(
 	return &HTTPServer{srv: srv}, nil
 }
 
+// Start starts the HTTP server and listens for incoming requests.
 func (s *HTTPServer) Start(ctx context.Context) error {
 	errCh := make(chan error, 1)
 	go func() {
@@ -47,6 +50,7 @@ func (s *HTTPServer) Start(ctx context.Context) error {
 	}
 }
 
+// Shutdown gracefully shuts down the HTTP server.
 func (s *HTTPServer) Shutdown(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
