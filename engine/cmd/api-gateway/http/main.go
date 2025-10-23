@@ -4,8 +4,8 @@ package main
 import (
 	"context"
 	http_api "fintech-capstone/m/v2/cmd/api-gateway/http/api"
-	zap_adapter "fintech-capstone/m/v2/internal/api_gateway/adapters/loggers/zap"
-	"fintech-capstone/m/v2/internal/api_gateway/ports"
+	"fintech-capstone/m/v2/internal/platform"
+	zap_adapter "fintech-capstone/m/v2/internal/platform/adapters/zap"
 	"fmt"
 	"log"
 	"os/signal"
@@ -34,7 +34,7 @@ func main() {
 	// Start
 	go func() {
 		if err := httpSrv.Start(ctx); err != nil {
-			logger.Error(fmt.Errorf("running server: %w", err), ports.Field{Key: "component", Value: "http"})
+			logger.Error(fmt.Errorf("running server: %w", err), platform.Field{Key: "component", Value: "http"})
 			stop()
 		}
 	}()

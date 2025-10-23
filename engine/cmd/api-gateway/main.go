@@ -6,8 +6,8 @@ import (
 	"errors"
 	grpc_api "fintech-capstone/m/v2/cmd/api-gateway/grpc/api"
 	http_api "fintech-capstone/m/v2/cmd/api-gateway/http/api"
-	zap_adapter "fintech-capstone/m/v2/internal/api_gateway/adapters/loggers/zap"
-	"fintech-capstone/m/v2/internal/api_gateway/ports"
+	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
+	zap_adapter "fintech-capstone/m/v2/internal/platform/adapters/zap"
 	"fmt"
 	"log"
 	"os/signal"
@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func runAll(ctx context.Context, servers ...ports.InboundServer) error {
+func runAll(ctx context.Context, servers ...inbound.Server) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	for _, s := range servers {

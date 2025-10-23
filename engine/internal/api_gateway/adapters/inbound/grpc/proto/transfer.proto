@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package transfer.v1;
+
+option go_package = "fintech-capstone/m/v2/internal/api_gateway/adapters/inbound/grpc/proto;proto";
+
+service TransferService {
+  rpc Transfer(TransferCommand) returns (TransferResponse);
+}
+
+message TransferCommand {
+  string from_account     = 1;
+  string to_account       = 2;
+  int64  amount_cents     = 3;
+  string idempotency_key  = 4;
+}
+
+message TransferResponse {
+  string transaction_id = 1; // use string, not uuid type
+  string status         = 2;
+  string message        = 3;
+}
+

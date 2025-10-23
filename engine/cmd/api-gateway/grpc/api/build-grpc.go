@@ -2,25 +2,26 @@ package grpc_api
 
 import (
 	"fintech-capstone/m/v2/cmd/api-gateway/stubs"
-	grpc_transport "fintech-capstone/m/v2/internal/api_gateway/adapters/transports/grpc"
-	pb "fintech-capstone/m/v2/internal/api_gateway/adapters/transports/grpc/proto"
-	"fintech-capstone/m/v2/internal/api_gateway/gateway"
-	"fintech-capstone/m/v2/internal/api_gateway/ports"
-	"fintech-capstone/m/v2/internal/api_gateway/usecase"
+	grpc_transport "fintech-capstone/m/v2/internal/api_gateway/adapters/inbound/grpc"
+	pb "fintech-capstone/m/v2/internal/api_gateway/adapters/inbound/grpc/proto"
+	"fintech-capstone/m/v2/internal/api_gateway/app"
+	"fintech-capstone/m/v2/internal/api_gateway/entrypoint"
+	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
+	"fintech-capstone/m/v2/internal/platform"
 	"fmt"
 	"time"
 
 	"google.golang.org/grpc"
 )
 
-func BuildServer(logger ports.Logger) ports.InboundServer {
+func BuildServer(logger platform.Logger) inbound.Server {
 	limiter, idemp, dispatch, metrics := stubs.Build()
-	uc := usecase.NewTransferService(dispatch, metrics)
+	uc := app.NewTransferService(dispatch, metrics, logger)
 
 	transferLimiter := limiter
 	transferIdemp := idemp
 
-	gw := gateway.New(
+	gw := entrypoint.NewGateway(
 		uc,
 		transferLimiter,
 		transferIdemp,
