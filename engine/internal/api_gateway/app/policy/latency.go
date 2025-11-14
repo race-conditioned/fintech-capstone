@@ -1,22 +1,19 @@
 package policy
 
 import (
-	"context"
-	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
-	"fintech-capstone/m/v2/internal/api_gateway/ports/outbound"
+	"fmt"
 	"time"
+
+	"github.com/race-conditioned/hexa/horizon/ports/inbound"
 )
 
 // ObserveLatency is a middleware that observes the latency of requests and records success metrics.
-func ObserveLatency[Com inbound.Command, Result inbound.Result](latencyMetrics outbound.LatencyMetrics) inbound.UnaryMiddleware[Com, Result] {
-	return func(next inbound.UnaryHandler[Com, Result]) inbound.UnaryHandler[Com, Result] {
-		return func(ctx context.Context, meta inbound.RequestMeta, cmd Com) (Result, error) {
-			start := time.Now()
-			res, err := next(ctx, meta, cmd)
-			if latencyMetrics != nil {
-				latencyMetrics.ObserveLatency(time.Since(start))
-			}
-			return res, err
-		}
+func ObserveLatency(next AppHandler) AppHandler {
+	return func(ctx Plugins, meta inbound.RequestMeta, cmd inbound.Command) (inbound.Result, error) {
+		fmt.Println("Observing latency...")
+		start := time.Now()
+		res, err := next(ctx, meta, cmd)
+		ctx.Metrics().ObserveLatency(time.Since(start))
+		return res, err
 	}
 }

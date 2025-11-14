@@ -1,31 +1,31 @@
 package policy
 
 import (
-	"context"
+	"fmt"
+
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
-	"fintech-capstone/m/v2/internal/api_gateway/ports/outbound"
+
+	hexa_inbound "github.com/race-conditioned/hexa/horizon/ports/inbound"
 )
 
-// Idempotency is a middleware that provides idempotency support for commands implementing IdempotentCommand.
-func Idempotency[Com inbound.IdempotentCommand, Res inbound.Result](
-	store outbound.Idempotency[Res],
-	counterMetrics outbound.CounterMetrics,
-) inbound.UnaryMiddleware[Com, Res] {
-	return func(next inbound.UnaryHandler[Com, Res]) inbound.UnaryHandler[Com, Res] {
-		return func(ctx context.Context, meta inbound.RequestMeta, cmd Com) (Res, error) {
-			if store != nil {
-				if cached, ok := store.Get(cmd.IdempotencyKey()); ok {
-					if counterMetrics != nil {
-						counterMetrics.IncIdempotentHit()
-					}
-					return cached, nil
-				}
-			}
-			res, err := next(ctx, meta, cmd)
-			if err == nil && store != nil && cmd.IdempotencyKey() != "" {
-				store.Store(cmd.IdempotencyKey(), res)
-			}
-			return res, err
+type IdempotentHandler = hexa_inbound.UnaryHandler[Plugins, inbound.IdempotentCommand, hexa_inbound.Result]
+
+// Idempotency is a middlelare that provides idempotency support for commands implementing IdempotentCommand.
+func Idempotency(next IdempotentHandler) IdempotentHandler {
+	return func(ctx Plugins, meta hexa_inbound.RequestMeta, cmd inbound.IdempotentCommand) (hexa_inbound.Result, error) {
+		fmt.Println("idempotency")
+		// WARN: can store be nil?
+		if cached, ok := ctx.Idempotency().Get(cmd.IdempotencyKey()); ok {
+			ctx.Metrics().IncIdempotentHit()
+			return cached, nil
 		}
+
+		res, err := next(ctx, meta, cmd)
+		// WARN: haven't checked if idempotencykey can be empty
+		if err == nil {
+			ctx.Idempotency().Store(cmd.IdempotencyKey(), res)
+		}
+
+		return res, err
 	}
 }

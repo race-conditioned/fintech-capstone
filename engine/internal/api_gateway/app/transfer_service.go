@@ -1,13 +1,17 @@
 package app
 
 import (
-	"context"
 	"errors"
+	"fmt"
+
+	"fintech-capstone/m/v2/internal/api_gateway/app/policy"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/outbound"
 	"fintech-capstone/m/v2/internal/platform"
 	"fintech-capstone/m/v2/internal/platform/apperr"
 )
+
+// RENAME THIS TO USE CASE NOT SERVICE? - seems like the wrong name
 
 // TransferService handles transfer requests.
 type TransferService struct {
@@ -22,9 +26,10 @@ func NewTransferService(d outbound.Dispatcher, m outbound.Metrics, l platform.Lo
 }
 
 // SubmitTransfer is a usecase that validates and submits a transfer command.
-func (s *TransferService) SubmitTransfer(ctx context.Context, meta inbound.RequestMeta, cmd inbound.TransferCommand) (<-chan inbound.TransferResult, error) {
+func (s *TransferService) SubmitTransfer(ctx policy.Plugins, cmd inbound.TransferCommand) (inbound.TransferResult, error) {
+	fmt.Println("trace: NewTransferService")
 	if err := validate(cmd); err != nil {
-		return nil, apperr.Invalid(err.Error())
+		return inbound.TransferResult{}, apperr.Invalid(err.Error())
 	}
 	// Delegate to worker pool via outbound port (transport-agnostic).
 	return s.dispatcher.Submit(ctx, cmd), nil

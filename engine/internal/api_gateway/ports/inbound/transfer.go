@@ -4,11 +4,31 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/race-conditioned/hexa/horizon/ports/inbound"
+	hexa_inbound "github.com/race-conditioned/hexa/horizon/ports/inbound"
 )
 
+// TransfersUseCase defines the inbound port for transfer operations.
 // Inbound port: Application service entrypoint (called by HTTP/gRPC adapters).
 type TransfersUseCase interface {
 	SubmitTransfer(ctx context.Context, meta RequestMeta, cmd TransferCommand) (<-chan TransferResult, error)
+}
+
+// TransferCommandHTTP defines the HTTP API payload for /transfer endpoint.
+type TransferCommandHTTP struct {
+	FromAccount    string `json:"from_account"`
+	ToAccount      string `json:"to_account"`
+	AmountCents    int64  `json:"amount_cents"`
+	IdempotencyKey string `json:"idempotency_key"`
+}
+
+func (dto *TransferCommandHTTP) ToCommand() inbound.Command {
+	return TransferCommand{
+		fromAccount:    dto.FromAccount,
+		toAccount:      dto.ToAccount,
+		amountCents:    dto.AmountCents,
+		idempotencyKey: dto.IdempotencyKey,
+	}
 }
 
 // TransferCommand defines the external API payload for /transfer from any transport.
@@ -53,12 +73,12 @@ func (t TransferCommand) IdempotencyKey() string {
 // It is the internal representation of a completed transfer job.
 type TransferResult struct {
 	transactionID uuid.UUID
-	status        ResultStatus
+	status        hexa_inbound.ResultStatus
 	message       string
 }
 
 // NewTransferResult creates a new TransferResult.
-func NewTransferResult(transactionID uuid.UUID, status ResultStatus, message string) TransferResult {
+func NewTransferResult(transactionID uuid.UUID, status hexa_inbound.ResultStatus, message string) TransferResult {
 	return TransferResult{
 		transactionID: transactionID,
 		status:        status,
@@ -67,16 +87,24 @@ func NewTransferResult(transactionID uuid.UUID, status ResultStatus, message str
 }
 
 // TransactionID returns the transaction ID of the transfer.
-func (t TransferResult) TransactionID() uuid.UUID {
-	return t.transactionID
-}
+func (t TransferResult) TransactionID() uuid.UUID { return t.transactionID }
 
 // Status returns the status of the transfer.
-func (t TransferResult) Status() ResultStatus {
-	return t.status
-}
+func (t TransferResult) Status() hexa_inbound.ResultStatus { return t.status }
 
 // Message returns the message associated with the transfer result.
-func (t TransferResult) Message() string {
-	return t.message
+func (t TransferResult) Message() string { return t.message }
+
+func (r TransferResult) Encode(s inbound.Sink) {
+	s.Write(r.status.String(), TransferResponse{
+		TransactionID: r.transactionID.String(),
+		Status:        r.status.String(),
+		Message:       r.message,
+	})
+}
+
+type TransferResponse struct {
+	TransactionID string `json:"transaction_id"`
+	Status        string `json:"status"`
+	Message       string `json:"message"`
 }

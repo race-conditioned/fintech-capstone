@@ -1,4 +1,3 @@
-// internal/api_gateway/app/composer/composer.go
 package composer
 
 import (

@@ -2,7 +2,9 @@ package endpoints
 
 import (
 	"context"
+	"errors"
 	"fintech-capstone/m/v2/internal/api_gateway/ports/inbound"
+	"fintech-capstone/m/v2/internal/platform/apperr"
 )
 
 // ProviderTransfers wraps use case to provide endpoint handlers.
@@ -22,9 +24,14 @@ func (p *ProviderTransfers) SubmitBase() inbound.UnaryHandler[inbound.TransferCo
 		if err != nil {
 			return inbound.TransferResult{}, err
 		}
+
 		select {
 		case <-ctx.Done():
-			return inbound.TransferResult{}, ctx.Err()
+			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				return inbound.TransferResult{}, apperr.Timeout("processing timeout")
+			}
+			return inbound.TransferResult{}, apperr.Internal("request canceled")
+
 		case res := <-ch:
 			return res, nil
 		}

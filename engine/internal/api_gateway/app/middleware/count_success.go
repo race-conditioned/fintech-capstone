@@ -11,7 +11,7 @@ func CountSuccess[Com inbound.Command, Result inbound.Result](counterMetrics out
 	return func(next inbound.UnaryHandler[Com, Result]) inbound.UnaryHandler[Com, Result] {
 		return func(ctx context.Context, meta inbound.RequestMeta, cmd Com) (Result, error) {
 			r, err := next(ctx, meta, cmd)
-			if err != nil && counterMetrics != nil {
+			if err == nil && counterMetrics != nil {
 				counterMetrics.IncSuccess()
 			}
 			return r, err

@@ -230,8 +230,6 @@ The `outbound.Metrics` facade groups three concerns:
 - Policy middlewares bump `IncRateLimited` / `IncTimeout` / `IncIdempotentHit`.
 - Latency is observed at the tail.
 
-> **Note:** See “Known issues” for a small improvement around success counting.
-
 ---
 
 ## Extending the Gateway

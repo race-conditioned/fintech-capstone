@@ -15,9 +15,8 @@ type IdempotentComposer[Com inbound.IdempotentCommand, Res inbound.Result] struc
 func NewIdempotentComposer[Com inbound.IdempotentCommand, Res inbound.Result](
 	deps CommonDeps,
 	idemp outbound.Idempotency[Res],
-	metrics outbound.Metrics,
 ) *IdempotentComposer[Com, Res] {
 	c := NewComposer[Com, Res](deps)
-	c.idempMW = policy.Idempotency[Com, Res](idemp, metrics)
+	c.idempMW = policy.Idempotency[Com, Res](idemp, deps.Metrics)
 	return &IdempotentComposer[Com, Res]{Composer: c}
 }
